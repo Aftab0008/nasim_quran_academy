@@ -5,6 +5,7 @@ export default function AdminPage() {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
@@ -17,8 +18,11 @@ export default function AdminPage() {
   }, [navigate]);
 
   const fetchClasses = () => {
-    fetch('http://localhost:5000/api/classes')
-      .then((res) => res.json())
+    fetch(`${API_BASE}/api/classes`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Server error");
+        return res.json();
+      })
       .then((data) => {
         setClasses(data);
         setLoading(false);
@@ -36,11 +40,11 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm('Are you sure you want to delete this booking?');
-    if (!confirm) return;
+    const confirmDelete = window.confirm('Are you sure you want to delete this booking?');
+    if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/classes/${id}`, {
+      const res = await fetch(`${API_BASE}/api/classes/${id}`, {
         method: 'DELETE',
       });
 

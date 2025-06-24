@@ -1,41 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
+"use client"
 
-export default function Comments() {
-  const [comments, setComments] = useState([]);
-  const [form, setForm] = useState({ name: '', comment: '' });
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
+import { motion } from "framer-motion"
+
+export default function CommentBox() {
+  const [comments, setComments] = useState([])
+  const [form, setForm] = useState({ name: "", comment: "" })
+
+  const API_BASE = import.meta.env.VITE_BACKEND_URL
 
   const loadComments = async () => {
-    const res = await fetch("http://localhost:5000/api/comments");
-    const data = await res.json();
-    setComments(data);
-  };
+    try {
+      const res = await fetch(`${API_BASE}/api/comments`)
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`)
+      }
+
+      const contentType = res.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text()
+        throw new Error(`Expected JSON, got: ${text}`)
+      }
+
+      const data = await res.json()
+      setComments(data)
+    } catch (err) {
+      console.error("Failed to load comments", err)
+      toast.error("Failed to load comments")
+    }
+  }
 
   useEffect(() => {
-    loadComments();
+    loadComments()
     const interval = setInterval(() => {
-      loadComments();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
+      loadComments()
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const loading = toast.loading("Submitting comment...");
+    e.preventDefault()
+    const loading = toast.loading("Submitting comment...")
     try {
-      await fetch("http://localhost:5000/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      toast.success("✅ Comment added!", { id: loading });
-      setForm({ name: '', comment: '' });
-      loadComments();
-    } catch {
-      toast.error("❌ Failed to submit comment.", { id: loading });
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/comments`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(form),
+})
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`)
+      }
+
+      toast.success("✅ Comment added!", { id: loading })
+      setForm({ name: "", comment: "" })
+      loadComments()
+    } catch (err) {
+      console.error("Failed to submit comment", err)
+      toast.error("❌ Failed to submit comment.", { id: loading })
     }
-  };
+  }
 
   return (
     <motion.div
@@ -56,14 +82,14 @@ export default function Comments() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           value={form.name}
-          onChange={e => setForm({ ...form, name: e.target.value })}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
           placeholder="Your Name"
           required
           className="w-full p-3 rounded-lg bg-white/10 text-white placeholder-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
         />
         <textarea
           value={form.comment}
-          onChange={e => setForm({ ...form, comment: e.target.value })}
+          onChange={(e) => setForm({ ...form, comment: e.target.value })}
           placeholder="Your Comment"
           required
           className="w-full h-24 p-3 rounded-lg bg-white/10 text-white placeholder-white/70 border border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
@@ -77,11 +103,11 @@ export default function Comments() {
       </form>
 
       <div className="mt-10">
-        <h3 className="text-lg font-semibold text-emerald-100 mb-4 border-b border-emerald-400 pb-2">🕌 Community Comments</h3>
-        {comments.length === 0 && (
-          <p className="text-white/60">No comments yet. Be the first!</p>
-        )}
-        {comments.map(c => (
+        <h3 className="text-lg font-semibold text-emerald-100 mb-4 border-b border-emerald-400 pb-2">
+          🌽 Community Comments
+        </h3>
+        {comments.length === 0 && <p className="text-white/60">No comments yet. Be the first!</p>}
+        {comments.map((c) => (
           <motion.div
             key={c.id}
             initial={{ opacity: 0, y: 30 }}
@@ -89,11 +115,11 @@ export default function Comments() {
             transition={{ duration: 0.4 }}
             className="mb-4 p-3 rounded-lg bg-white/10 border border-white/20"
           >
-            <p className="text-white/90 mb-1">“{c.comment}”</p>
+            <p className="text-white/90 mb-1">"{c.comment}"</p>
             <p className="text-xs text-white/60 text-right">– {c.name}</p>
           </motion.div>
         ))}
       </div>
     </motion.div>
-  );
+  )
 }

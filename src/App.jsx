@@ -6,7 +6,7 @@ import BookClass from './pages/BookClass';
 import Community from './pages/Community';
 import Comments from './pages/Comments';
 import AdminPage from './pages/AdminPage';
-import AdminLogin from './pages/AdminLogin';
+import AdminLogin from './pages/Adminlogin';
 // import ProtectedRoute from './components/ProtectedRoute'; // Uncomment if using protection
 
 export default function App() {
